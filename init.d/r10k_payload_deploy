@@ -17,7 +17,6 @@ NAME=r10k_payload_deploy
 
 PIDFILE=/var/run/${NAME}.pid
 
-CONFFILE=/opt/r10k_payload_deploy/config.yml
 DAEMON=/opt/r10k_payload_deploy/app.rb
 
 SCRIPTNAME=/etc/init.d/$NAME

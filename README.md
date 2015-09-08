@@ -22,21 +22,17 @@ set the webhook up in git with a shared secret, application/json, url
 config
 ------
 
-you'll want a config.yml:
+you'll want a defaults file for the initscript to load:
 
-    ---
-    # same as your github webhook
-    sha1_secret: xxxxxxxxxx
-   
-    # where to bind
-    port: 8443
-    bind: '::'
-   
-    # certs. if you use snake oil, turn off verification in github webhook
-    ssl_crt: /path/to/server.crt
-    ssl_key: /path/to/server.key
-   
-    # ssia
-    logfile: /var/log/r10k_payload_deploy.log
-    pidfile: /var/run/r10k_payload_deploy.pid
-
+        SHA1_SECRET=94d444f4f9194533c190cfb7b5fd4d38ee536aad
+        
+        PORT=8443
+        BIND="::"
+        
+        SSL_CRT=/etc/ssl/certs/ssl-cert-snakeoil.pem
+        SSL_KEY=/etc/ssl/private/ssl-cert-snakeoil.key
+        
+        LOGFILE=/var/log/r10k_payload_deploy.log
+        PIDFILE=/var/run/r10k_payload_deploy.pid
+        
+        DAEMON=/opt/r10k_payload_deploy/app.rb
