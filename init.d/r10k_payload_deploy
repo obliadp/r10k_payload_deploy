@@ -25,7 +25,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
 # expose to ruby
-export PORT BIND SSL_CRT SSL_KEY LOGFILE PIDFILE
+export SHA1_SECRET PORT BIND SSL_CRT SSL_KEY LOGFILE PIDFILE
 
 # Define LSB log_* functions.
 . /lib/lsb/init-functions
