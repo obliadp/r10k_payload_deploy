@@ -17,7 +17,7 @@ webhook
 -------
 
 set the webhook up in git with a shared secret, application/json, url
-<yourserver>:<yourport>/payload, and check the box 'Send me everything'
+<yourserver>:<yourport>/payload, and check the box 'Just the push event'
 
 config
 ------
