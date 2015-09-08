@@ -38,8 +38,8 @@ configure do
     def server_settings
       {
         :backend          => MyThinBackend,
-        :private_key_file => File.dirname(__FILE__) + "/" + $config['ssl_key'],
-        :cert_chain_file  => File.dirname(__FILE__) + "/" + $config['ssl_crt'],
+        :private_key_file => $config['ssl_key'],
+        :cert_chain_file  => $config['ssl_crt'],
         :verify_peer      => false
       }
     end
@@ -52,9 +52,12 @@ post '/payload' do
   request.body.rewind
   payload_body = request.body.read
   verify_signature(payload_body)
-  push = JSON.parse(payload_body)
+  payload = JSON.parse(payload_body)
 
-  a = analyze_payload(push)
+  verify_event_type(payload)
+
+  a = analyze_payload(payload)
+
 
   puts "#{a['commit_id']}: received payload with changes for branch #{a['branch_name']} of repo #{a['repository_name']}"
   puts "                   url: #{a['commit_url']}"
@@ -62,7 +65,7 @@ post '/payload' do
   puts "		   message: #{a['commit_message']}"
   puts "#{a['commit_id']}: will deploy environment #{a['r10k_full_name']}"
 
-  mco_deploy(a['r10k_full_name'], a['commit_id'], changed_puppetfile(push))
+  mco_deploy(a['r10k_full_name'], a['commit_id'], changed_puppetfile(payload))
   
 end
 
@@ -71,8 +74,12 @@ def verify_signature(payload_body)
   return halt 500, "Signatures didn't match!" unless Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
 end
 
-def analyze_payload(payload_body)
+def verify_event_type(payload_body)
+  # if not a push event, return 200OK and do nothing
+  return halt 202, "event type not handled atm, but that's okay. see #{payload_body['head_commit']['url']} for details" if payload_body['pusher'].nil?
+end
 
+def analyze_payload(payload_body)
   @info = Hash.new
 
   @info['branch_name'] = payload_body['ref'].split('/').last # "ref": "refs/heads/ipv6" gives 'ipv6' as branch
@@ -97,16 +104,14 @@ def mco_deploy(name, commit_id, modules)
   @mc.progress = false
   if modules 
     printf("%s: Deploying environment %s with changed Puppetfile, updating modules on all puppet masters\n", commit_id, name)
-    printf("%s:", commit_id)
     @stats = @mc.deploy_with_modules(:environment => name).each do |resp|
-      printf("%s: %s ", resp[:sender], resp[:statusmsg])
+      printf("%s: %-20s: %s\n", commit_id, resp[:sender], resp[:statusmsg])
     end
     puts
   else
     printf("%s: Puppetfile unchanged, deploying environment %s, but not deploying modules\n", commit_id, name)
-    printf("%s:", commit_id)
     @stats = @mc.deploy(:environment => name).each do |resp|
-      printf("%s: %s ", resp[:sender], resp[:statusmsg])
+      printf("%s: %-20s: %s\n", commit_id, resp[:sender], resp[:statusmsg])
     end
     puts
   end

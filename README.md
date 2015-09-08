@@ -13,10 +13,17 @@ puppet masters
 mco agents blatantly stolen from <https://github.com/acidprime/r10k> and
 slightly modified to fit our workflow
 
+webhook
+-------
+
+set the webhook up in git with a shared secret, application/json, url
+<yourserver>:<yourport>/payload, and check the box 'Send me everything'
+
 config
 ------
 
 you'll want a config.yml:
+
     ---
     # same as your github webhook
     sha1_secret: xxxxxxxxxx
@@ -26,8 +33,8 @@ you'll want a config.yml:
     bind: '::'
    
     # certs. if you use snake oil, turn off verification in github webhook
-    ssl_crt: server.crt
-    ssl_key: server.key
+    ssl_crt: /path/to/server.crt
+    ssl_key: /path/to/server.key
    
     # ssia
     logfile: /var/log/r10k_payload_deploy.log
