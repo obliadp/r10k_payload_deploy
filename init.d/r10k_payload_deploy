@@ -26,6 +26,8 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 # expose to ruby
 export SHA1_SECRET PORT BIND SSL_CRT SSL_KEY LOGFILE PIDFILE
+# mco needs to know where $HOME is
+export HOME="/root"
 
 # Define LSB log_* functions.
 . /lib/lsb/init-functions
