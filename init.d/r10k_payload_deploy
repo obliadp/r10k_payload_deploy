@@ -24,6 +24,9 @@ SCRIPTNAME=/etc/init.d/$NAME
 # Read configuration variable file if it is present
 [ -r /etc/default/$NAME ] && . /etc/default/$NAME
 
+# expose to ruby
+export PORT BIND SSL_CRT SSL_KEY LOGFILE PIDFILE
+
 # Define LSB log_* functions.
 . /lib/lsb/init-functions
 

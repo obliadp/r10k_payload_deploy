@@ -30,8 +30,8 @@ configure do
     def server_settings
       {
         :backend          => MyThinBackend,
-        :private_key_file => ENV['SSL_CRT'],
-        :cert_chain_file  => ENV['SSL_KEY'],
+        :private_key_file => ENV['SSL_KEY'],
+        :cert_chain_file  => ENV['SSL_CRT'],
         :verify_peer      => false
       }
     end
