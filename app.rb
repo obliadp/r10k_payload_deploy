@@ -12,14 +12,6 @@ require 'json'
 require 'yaml'
 require 'mcollective'
 
-puts "Starting up"
-
-unless ARGV[0] then
-  abort("Provide us with a config file")
-end
-
-$config  = File.open( ARGV[0], 'r') { |fo| YAML.load( fo ) }
-
 class MyThinBackend < ::Thin::Backends::TcpServer
   def initialize(host, port, options)
     super(host, port)
@@ -30,16 +22,16 @@ end
 
 configure do
   set :environment, :production
-  set :bind, $config['bind']
-  set :port, $config['port']
+  set :bind, ENV['BIND']
+  set :port, ENV['PORT']
   set :server, "thin"
   set :daemon, true
   class << settings
     def server_settings
       {
         :backend          => MyThinBackend,
-        :private_key_file => $config['ssl_key'],
-        :cert_chain_file  => $config['ssl_crt'],
+        :private_key_file => ENV['SSL_CRT'],
+        :cert_chain_file  => ENV['SSL_KEY'],
         :verify_peer      => false
       }
     end
@@ -53,11 +45,9 @@ post '/payload' do
   payload_body = request.body.read
   verify_signature(payload_body)
   payload = JSON.parse(payload_body)
-
   verify_event_type(payload)
 
   a = analyze_payload(payload)
-
 
   puts "#{a['commit_id']}: received payload with changes for branch #{a['branch_name']} of repo #{a['repository_name']}"
   puts "                   url: #{a['commit_url']}"
@@ -70,7 +60,7 @@ post '/payload' do
 end
 
 def verify_signature(payload_body)
-  signature = 'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), $config['sha1_secret'], payload_body)
+  signature = 'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), ENV['SHA1_SECRET'], payload_body)
   return halt 500, "Signatures didn't match!" unless Rack::Utils.secure_compare(signature, request.env['HTTP_X_HUB_SIGNATURE'])
 end
 
@@ -118,4 +108,4 @@ def mco_deploy(name, commit_id, modules)
   @mc.disconnect
 end
 
-Daemon.daemonize($config['pidfile'], $config['logfile'])
+Daemon.daemonize(ENV['PIDFILE'], ENV['LOGFILE'])
