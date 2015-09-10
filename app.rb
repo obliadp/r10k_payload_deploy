@@ -92,19 +92,11 @@ end
 def mco_deploy(name, commit_id, modules)
   @mc = rpcclient("r10k")
   @mc.progress = false
-  if modules 
-    printf("%s: Deploying environment %s with changed Puppetfile, updating modules on all puppet masters\n", commit_id, name)
-    @stats = @mc.deploy_with_modules(:environment => name).each do |resp|
-      printf("%s: %-20s: %s\n", commit_id, resp[:sender], resp[:statusmsg])
-    end
-    puts
-  else
-    printf("%s: Puppetfile unchanged, deploying environment %s, but not deploying modules\n", commit_id, name)
-    @stats = @mc.deploy(:environment => name).each do |resp|
-      printf("%s: %-20s: %s\n", commit_id, resp[:sender], resp[:statusmsg])
-    end
-    puts
+  printf("%s: Deploying environment %s %s modules\n", commit_id, name, (modules ? 'with' : 'without'))
+  @stats = @mc.deploy_with_modules(:environment => name).each do |resp|
+    printf("%s: %-20s: %s\n", commit_id, resp[:sender], resp[:statusmsg])
   end
+  puts
   @mc.disconnect
 end
 
