@@ -82,6 +82,8 @@ def analyze_payload(payload_body)
   @info['repository_name'] = payload_body['repository']['name']
   @info['r10k_shortname'] = payload_body['repository']['name'].split('-').last # puppet-env-front gives 'front'
   @info['r10k_full_name'] = "api_#{@info['r10k_shortname']}_#{@info['branch_name']}"
+
+  return @info
 end
 
 def deploy_puppetfile(payload_body)
