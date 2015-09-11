@@ -87,7 +87,8 @@ def analyze_payload(payload_body)
 end
 
 def deploy_puppetfile(payload_body)
-  return true if (payload_body['head_commit']['modified'].include?('Puppetfile') || payload_body['created'] == "true")
+  # if Puppetfile is modified, or if this is a new branch, deploy with '-p'
+  return true if (payload_body['head_commit']['modified'].include?('Puppetfile') || payload_body['created'])
 end
 
 def mco_deploy(name, commit_id, modules)
