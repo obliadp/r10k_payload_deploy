@@ -40,6 +40,8 @@ end
 
 include MCollective::RPC
 
+Daemon.daemonize(ENV['PIDFILE'], ENV['LOGFILE'])
+
 post '/payload' do
   request.body.rewind
   payload_body = request.body.read
@@ -55,8 +57,7 @@ post '/payload' do
   puts "		   message: #{a['commit_message']}"
   puts "#{a['commit_id']}: will deploy environment #{a['r10k_full_name']}"
 
-  mco_deploy(a['r10k_full_name'], a['commit_id'], changed_puppetfile(payload))
-  
+  mco_deploy(a['r10k_full_name'], a['commit_id'], deploy_puppetfile(payload))
 end
 
 def verify_signature(payload_body)
@@ -71,8 +72,8 @@ end
 
 def analyze_payload(payload_body)
   @info = Hash.new
-
   @info['branch_name'] = payload_body['ref'].split('/').last # "ref": "refs/heads/ipv6" gives 'ipv6' as branch
+  @info['created'] = payload_body['created']
   @info['commit_id'] = payload_body['head_commit']['id'] 
   @info['commit_message'] = payload_body['head_commit']['message'] 
   @info['commit_author'] = payload_body['head_commit']['committer']['name'] 
@@ -81,12 +82,10 @@ def analyze_payload(payload_body)
   @info['repository_name'] = payload_body['repository']['name']
   @info['r10k_shortname'] = payload_body['repository']['name'].split('-').last # puppet-env-front gives 'front'
   @info['r10k_full_name'] = "api_#{@info['r10k_shortname']}_#{@info['branch_name']}"
-
-  return @info
 end
 
-def changed_puppetfile(payload_body)
-  payload_body['head_commit']['modified'].include?('Puppetfile')
+def deploy_puppetfile(payload_body)
+  return true if (payload_body['head_commit']['modified'].include?('Puppetfile') || payload_body['created'] == "true")
 end
 
 def mco_deploy(name, commit_id, modules)
@@ -100,4 +99,3 @@ def mco_deploy(name, commit_id, modules)
   @mc.disconnect
 end
 
-Daemon.daemonize(ENV['PIDFILE'], ENV['LOGFILE'])
