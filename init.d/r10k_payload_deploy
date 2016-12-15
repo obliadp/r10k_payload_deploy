@@ -11,13 +11,14 @@
 # Author: Ørjan Ommundsen <orjan@redpill-linpro.com>
 #
 
-PATH=/sbin:/usr/sbin:/bin:/usr/bin
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
 DESC="r10k payload deploy"
 NAME=r10k_payload_deploy
 
 PIDFILE=/var/run/${NAME}.pid
 
-DAEMON=/opt/r10k_payload_deploy/app.rb
+WORKDIR=/opt/r10k_payload_deploy
+DAEMON=$WORKDIR/app.rb
 
 SCRIPTNAME=/etc/init.d/$NAME
 
@@ -31,6 +32,12 @@ export HOME="/root"
 
 # Define LSB log_* functions.
 . /lib/lsb/init-functions
+
+do_bundler()
+{
+  cd $WORKDIR
+  bundle check || bundle install --path=vendor
+}
 
 do_start()
 {
@@ -52,6 +59,8 @@ do_stop()
 
 case "$1" in
   start)
+  log_daemon_msg "Checking dependencies for $DESC"
+  do_bundler
 	log_daemon_msg "Starting $DESC"
 	do_start
 	case "$?" in
