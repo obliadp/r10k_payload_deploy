@@ -36,7 +36,7 @@ export HOME="/root"
 do_bundler()
 {
   cd $WORKDIR
-  bundle check || bundle install --path=vendor
+  bundle check || bundle install
 }
 
 do_start()
