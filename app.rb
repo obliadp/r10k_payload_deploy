@@ -51,13 +51,13 @@ post '/payload' do
 
   a = analyze_payload(payload)
 
-  puts "#{a['commit_id']}: received payload with changes for branch #{a['branch_name']} of repo #{a['repository_name']}"
-  puts "                   url: #{a['commit_url']}"
-  puts "                   commiter: #{a['commit_author']} <#{a['commit_email']}>"
-  puts "		   message: #{a['commit_message']}"
-  puts "#{a['commit_id']}: will deploy environment #{a['r10k_full_name']}"
+  @_commit_id = a['commit_id'][0..5]
 
-  mco_deploy(a['r10k_full_name'], a['commit_id'], deploy_puppetfile(payload))
+  puts "#{@_commit_id}: received payload with changes for branch #{a['branch_name']} of repo #{a['repository_name']}"
+  puts "        url: #{a['commit_url']}"
+  puts "        commiter: #{a['commit_author']} || message: #{a['commit_message']}"
+
+  mco_deploy(a['r10k_full_name'], @_commit_id, deploy_puppetfile(payload))
 end
 
 def verify_signature(payload_body)
@@ -98,7 +98,6 @@ def mco_deploy(name, commit_id, modules)
   @stats = @mc.deploy_with_modules(:environment => name).each do |resp|
     printf("%s: %-20s: %s\n", commit_id, resp[:sender], resp[:statusmsg])
   end
-  puts
   @mc.disconnect
 end
 
